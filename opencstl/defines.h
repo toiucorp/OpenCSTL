@@ -284,7 +284,7 @@ OPENCSTL_DEQUE_NIDX(&container, NIDX_CTYPE) == OPENCSTL_STACK ?_cstl_stack_top(&
 #define cstl_max_element(C, ...) ocstl_min_max_element(&(C), ##__VA_ARGS__, 1LL, NULL)
 #define cstl_min_element(C, ...) ocstl_min_max_element(&(C), ##__VA_ARGS__, 0LL, NULL)
 
-#elif defined(OCSTL_OS_LINUX) || defined(OCSTL_OS_MAC)
+#elif defined(OCSTL_OS_LINUX) || defined(OCSTL_OS_MACOS)
 
 // _CSTL_TYPEOF is now defined unconditionally above the platform branch.
 

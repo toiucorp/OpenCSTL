@@ -335,7 +335,7 @@ JSON_TOKEN *__get(JSON_TOKEN *root, char *keys) {
     if (!root || !keys) { return NULL; }
 
     char buf[1024];
-#if defined(OCSTL_CC_MSVC) || defined(OCSTL_CC_CLANG)
+#if defined(OCSTL_OS_WINDOWS) && (defined(OCSTL_CC_MSVC) || defined(OCSTL_CC_CLANG))
     strncpy_s(buf, sizeof(buf), keys, _TRUNCATE);
 #else
     strncpy(buf, keys, sizeof(buf) - 1);
