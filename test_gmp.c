@@ -22,7 +22,7 @@ void test_uint64() {
         *it = val;
     }
     for (uint64_t *it = begin(arr); it != end(arr); it = next(it)) {
-        println("{}", *it);
+        //println("{}", *it);
         printf("%lu\n", *it);
     }
     destroy(arr);
@@ -48,7 +48,7 @@ void test_mpz() {
 
 
     for (mpz_t **it = begin(arr); it != end(arr); it = next(it)) {
-        unsigned long x = mpz_get_ui(**it); // Áö¼ö·Î ¾µ °ª ¸ÕÀú ÃßÃâ
+        unsigned long x = mpz_get_ui(**it); // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
         mpz_pow_ui(**it, **it, x); // base = *it, exp = x
     }
 

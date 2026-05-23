@@ -356,3 +356,4 @@ tmp/
 .claude/
 helper/
 cmake-build/
+.DS_Store

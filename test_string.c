@@ -103,6 +103,12 @@ int main() {
     printf("        -> %s\n",
            prime == 2 ? "definitely prime" : prime == 1 ? "probably prime" : "composite");
 
+
+    mpz_set_str(a, "340282366920938463463374607431768211455", 10);
+    int prime2 = mpz_probab_prime_p(a, 25);
+    mpz_print("[prime] M127 = ", a);
+    printf("        -> %s\n",
+           prime2 == 2 ? "definitely prime" : prime2 == 1 ? "probably prime" : "composite");
     // ── 정리 ──────────────────────────────────────────────────
     mpz_clear(a);
     mpz_clear(b);

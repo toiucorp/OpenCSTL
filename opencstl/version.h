@@ -38,9 +38,9 @@
 #define HG_3282159A01880257F6A4E53AEC354ACB6F7CF5BC34243136D0AE684B74FB1426_H
 #include "crossplatform.h"
 
-static char *OPENCSTL_VERSION = "v1.4.0";
-static char *opencstl_version(void) {
+static char *OPENCSTL_VERSION = "v1.4.1";
 
+static char *opencstl_version(void) {
     return OPENCSTL_VERSION;
 }
 
@@ -51,5 +51,33 @@ static char *opencstl_env(void) {
              "%s, %s, %s", OCSTL_OS_STR, OCSTL_CC_STR, OCSTL_C_VERSION_STR);
     return __opencstl_env_str;
 }
+
+#ifndef __VERSION__
+
+#if defined(OCSTL_CC_TCC)
+#define __VERSION__ "TCC Compiler"
+#elif defined(OCSTL_CC_MSVC)
+
+
+#if   _MSC_VER >= 1960
+#define __VERSION__ "VS20xx"
+#elif _MSC_VER >= 1950
+#define __VERSION__ "VS2026"
+#elif _MSC_VER >= 1930
+#define __VERSION__ "VS2022"
+#elif _MSC_VER >= 1920
+#define __VERSION__ "VS2019"
+#elif _MSC_VER >= 1910
+#define __VERSION__ "VS2017"
+#elif _MSC_VER >= 1900
+#define __VERSION__ "VS2015"
+#else
+#define __VERSION__ "VSxxxx"
+#endif
+
+#endif
+
+#endif
+
 
 #endif

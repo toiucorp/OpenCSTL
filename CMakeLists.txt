@@ -1,7 +1,18 @@
 cmake_minimum_required(VERSION 3.10)
 
+if(CMAKE_C_COMPILER MATCHES "tcc")
+    set(CMAKE_C_COMPILER_WORKS 1)
+    set(CMAKE_OSX_ARCHITECTURES "")
+    set(CMAKE_OSX_SYSROOT "")
+endif()
 
 project(OpenCSTL C)
+
+if(CMAKE_C_COMPILER MATCHES "tcc")
+    set(CMAKE_C_LINK_FLAGS "")
+    set(CMAKE_EXE_LINKER_FLAGS "")
+    set(CMAKE_SHARED_LINKER_FLAGS "")
+endif()
 
 set(CMAKE_C_STANDARD 11)
 #set(CMAKE_CXX_STANDARD 17)

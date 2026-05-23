@@ -709,5 +709,6 @@ int main() {
 
     logging.warning(opencstl_env());
     logging.warning(opencstl_version());
+    logging.warning(__VERSION__);
     return 0;
 }

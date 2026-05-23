@@ -52,6 +52,10 @@
 #endif
 #endif
 
+#if defined(OCSTL_OS_LINUX) || defined(OCSTL_OS_MACOS)
+#include <unistd.h>  // isatty, fileno
+#endif
+
 const char *__red = "\033[31m";
 const char *__green = "\033[32m";
 const char *__yellow = "\033[33m";
@@ -90,7 +94,27 @@ static WORD ansi_to_winattr(const char *color) {
 }
 
 #endif // OCSTL_OS_WINDOWS
+#if defined(OCSTL_OS_LINUX) || defined(OCSTL_OS_MACOS)
+static int s_stdout_is_tty = -1;
 
+static int stdout_supports_ansi(void) {
+    if (s_stdout_is_tty == -1) {
+        // Xcode 콘솔, 파일 리다이렉트, 파이프 등은 TTY가 아님
+        if (!isatty(fileno(stdout))) {
+            s_stdout_is_tty = 0;
+        } else {
+            // TERM 환경변수가 "dumb"이거나 없으면 색상 비활성화
+            const char *term = getenv("TERM");
+            if (term == NULL || strcmp(term, "dumb") == 0) {
+                s_stdout_is_tty = 0;
+            } else {
+                s_stdout_is_tty = 1;
+            }
+        }
+    }
+    return s_stdout_is_tty;
+}
+#endif
 static int __vcprintln(const char *color, const char *format, va_list args) {
     int ret;
 
@@ -107,9 +131,14 @@ static int __vcprintln(const char *color, const char *format, va_list args) {
         printf("\n");
     }
 #elif defined(OCSTL_OS_LINUX) || defined(OCSTL_OS_MACOS)
-    printf("%s", color);
-    ret = vprintf(format, args);
-    printf("%s\n", __reset);
+    if (stdout_supports_ansi()) {
+        printf("%s", color);
+        ret = vprintf(format, args);
+        printf("%s\n", __reset);
+    } else {
+        ret = vprintf(format, args);
+        printf("\n");
+    }
 #else
     ret = vprintf(format, args);
     printf("\n");

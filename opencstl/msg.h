@@ -370,8 +370,206 @@ break;
     }
 }
 
-#elif defined(OASTL_OS_MACOD)
+#elif defined(OCSTL_OS_MACOS)
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+#include <sys/wait.h>
+#include <fcntl.h>
+#include <signal.h>
+#include <mach-o/dyld.h>  // _NSGetExecutablePath
 
+// MessageBoxExA 반환값과 동일한 상수
+#define IDABORT   3
+#define IDRETRY   4
+#define IDIGNORE  5
+
+// 다국어 라벨 (Linux 쪽 kLangs와 동일 구조)
+struct mac_lang_labels {
+    const char *prefix;
+    const char *abort_s;
+    const char *retry_s;
+    const char *ignore_s;
+    const char *title_s;
+};
+
+static const struct mac_lang_labels kMacLangs[] = {
+    {"ko", "중단", "다시 시도", "무시", "런타임 라이브러리"},
+    {"ja", "中止", "再試行", "無視", "ランタイム ライブラリ"},
+    {"zh", "中止", "重试", "忽略", "运行时库"},
+    {"de", "Abbrechen", "Wiederholen", "Ignorieren", "Laufzeitbibliothek"},
+    {"fr", "Abandonner", "Réessayer", "Ignorer", "Bibliothèque d'exécution"},
+    {"es", "Anular", "Reintentar", "Omitir", "Biblioteca de ejecución"},
+    {"ru", "Прервать", "Повторить", "Пропустить", "Библиотека времени выполнения"},
+    {"it", "Interrompi", "Riprova", "Ignora", "Libreria runtime"},
+    {"pt", "Anular", "Repetir", "Ignorar", "Biblioteca de runtime"},
+    {"en", "Abort", "Retry", "Ignore", "Runtime Library"},
+    {NULL, NULL, NULL, NULL, NULL}
+};
+
+static const struct mac_lang_labels *detect_mac_lang(void) {
+    const char *lang = getenv("LC_ALL");
+    if (!lang || !*lang) { lang = getenv("LC_MESSAGES"); }
+    if (!lang || !*lang) { lang = getenv("LANG"); }
+    if (!lang || !*lang) { lang = "en"; }
+
+    { int i; for (i = 0; kMacLangs[i].prefix; i++) {
+        size_type64 n = strlen(kMacLangs[i].prefix);
+        if (strncmp(lang, kMacLangs[i].prefix, n) == 0 &&
+            (lang[n] == '\0' || lang[n] == '_' || lang[n] == '.')) {
+            return &kMacLangs[i];
+        }
+    } }
+    int last = 0;
+    while (kMacLangs[last + 1].prefix) last++;
+    return &kMacLangs[last];
+}
+
+static void get_exe_path_mac(char *out, size_type64 n) {
+    uint32_t size = (uint32_t)n;
+    if (_NSGetExecutablePath(out, &size) != 0) {
+        out[0] = '\0';
+    }
+}
+
+// AppleScript 문자열 내부의 특수문자 이스케이프
+// 큰따옴표(")와 백슬래시(\)를 \" 와 \\ 로 변환
+static void escape_for_applescript(const char *src, char *dst, size_type64 dst_size) {
+    size_type64 di = 0;
+    size_type64 i;
+    for (i = 0; src[i] != '\0' && di + 2 < dst_size; i++) {
+        if (src[i] == '"' || src[i] == '\\') {
+            dst[di++] = '\\';
+        }
+        dst[di++] = src[i];
+    }
+    dst[di] = '\0';
+}
+
+// Windows의 MessageBoxExA(MB_ABORTRETRYIGNORE|MB_ICONERROR) 대응
+static int osascript_abort_retry_ignore(const char *title, const char *body) {
+    const struct mac_lang_labels *L = detect_mac_lang();
+
+    // AppleScript용 이스케이프
+    char esc_body[8192];
+    char esc_title[256];
+    escape_for_applescript(body, esc_body, sizeof(esc_body));
+    escape_for_applescript(title, esc_title, sizeof(esc_title));
+
+    // AppleScript 본문 빌드
+    // 결과 형태: "button returned:Retry"
+    char script[10240];
+    snprintf(script, sizeof(script),
+        "try\n"
+        "  set theResult to display dialog \"%s\" "
+        "with title \"%s\" "
+        "with icon stop "
+        "buttons {\"%s\", \"%s\", \"%s\"} "
+        "default button \"%s\" "
+        "cancel button \"%s\"\n"
+        "  return button returned of theResult\n"
+        "on error\n"
+        "  return \"__CANCEL__\"\n"
+        "end try",
+        esc_body, esc_title,
+        L->abort_s, L->retry_s, L->ignore_s,
+        L->abort_s, L->abort_s);
+
+    int pipefd[2];
+    if (pipe(pipefd) < 0) { return IDABORT; }
+
+    pid_t pid = fork();
+    if (pid < 0) {
+        close(pipefd[0]);
+        close(pipefd[1]);
+        return IDABORT;
+    }
+
+    if (pid == 0) {
+        // 자식: osascript 실행
+        close(pipefd[0]);
+        dup2(pipefd[1], STDOUT_FILENO);
+        close(pipefd[1]);
+
+        // stderr 버리기 (AppleScript 경고 무시)
+        int devnull = open("/dev/null", O_WRONLY);
+        if (devnull >= 0) {
+            dup2(devnull, STDERR_FILENO);
+            close(devnull);
+        }
+
+        execlp("osascript", "osascript", "-e", script, (char *)NULL);
+        _exit(127);
+    }
+
+    // 부모: stdout에서 버튼 결과 읽기
+    close(pipefd[1]);
+    char out[256] = {0};
+    ssize_t n = read(pipefd[0], out, sizeof(out) - 1);
+    close(pipefd[0]);
+    if (n > 0) { out[n] = '\0'; }
+
+    int status = 0;
+    waitpid(pid, &status, 0);
+
+    // 줄바꿈 제거
+    size_type64 Llen = strlen(out);
+    while (Llen > 0 && (out[Llen - 1] == '\n' || out[Llen - 1] == '\r')) {
+        out[--Llen] = '\0';
+    }
+
+    // Cancel/Esc 또는 osascript 실행 실패
+    if (strcmp(out, "__CANCEL__") == 0 || out[0] == '\0') {
+        return IDABORT;
+    }
+
+    // 버튼 라벨 매칭
+    if (strcmp(out, L->retry_s) == 0)  { return IDRETRY; }
+    if (strcmp(out, L->ignore_s) == 0) { return IDIGNORE; }
+    return IDABORT;
+}
+
+static void MsgBoxGUI(const char *format, ...) {
+    char userMsg[1024];
+    va_list args;
+    va_start(args, format);
+    vsnprintf(userMsg, sizeof(userMsg), format, args);
+    va_end(args);
+
+    char path[OCSTL_MAX_PATH];
+    get_exe_path_mac(path, sizeof(path));
+
+    // AppleScript는 줄바꿈이 \n 그대로 들어가도 잘 표시됨
+    char buf[8192] = {0};
+    snprintf(buf, sizeof(buf),
+             "Runtime Error!\n\n"
+             "Program: %s\n\n"
+             "MsgBoxGUI() has been called\n\n"
+             "%s\n\n"
+             "(Press Retry to debug the application)",
+             path, userMsg);
+
+    int r = osascript_abort_retry_ignore("Runtime Library", buf);
+
+    switch (r) {
+        case IDABORT:
+            fprintf(stderr, "abort\n");
+            _exit(3);
+        case IDRETRY:
+            fprintf(stderr, "retry\n");
+#if defined(OCSTL_CC_TCC) || defined(OCSTL_CC_COMPCERT)
+            raise(SIGTRAP);  // TCC: no __builtin_trap
+#else
+            __builtin_trap();
 #endif
+            break;
+        case IDIGNORE:
+            fprintf(stderr, "ignore\n");
+            break;
+    }
+}
+
+#endif // OCSTL_OS_MACOS
 #endif
