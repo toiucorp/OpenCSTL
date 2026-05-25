@@ -86,6 +86,7 @@
 // =========
 
 #define INTEGER32_MAX 0x7fffffff
+#define OCSTL_CHAR_BIT 8
 
 
 #if defined(OPENCSTL_OS_WINDOWS)

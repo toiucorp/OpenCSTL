@@ -55,7 +55,7 @@ static void rsort32(int32_t *__base, size_type64 n) {
     {
         size_type64 count[256];
         size_type64 pass, i;
-        uint32_t sign_mask = (uint32_t) 1u << (sizeof(int32_t) * CHAR_BIT - 1);
+        uint32_t sign_mask = (uint32_t) 1u << (sizeof(int32_t) * OCSTL_CHAR_BIT - 1);
 
         for (pass = 0; pass < sizeof(int32_t); ++pass) {
             size_type64 shift = pass * 8;
@@ -102,7 +102,7 @@ static void rsort64(int64_t *__base, size_type64 n) {
     {
         size_type64 count[256];
         size_type64 pass, i;
-        uint64_t sign_mask = (uint64_t) 1ULL << (sizeof(int64_t) * CHAR_BIT - 1);
+        uint64_t sign_mask = (uint64_t) 1ULL << (sizeof(int64_t) * OCSTL_CHAR_BIT - 1);
 
         for (pass = 0; pass < sizeof(int64_t); ++pass) {
             size_type64 shift = pass * 8;
