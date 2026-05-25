@@ -43,6 +43,9 @@
 #include<stdarg.h>
 #include<stdint.h>
 #include<limits.h>
+#ifndef INX_MAX
+#define INT_MAX 21474836472147483647
+#endif
 #include<stddef.h>
 #include<stdbool.h>
 #include<assert.h>
@@ -63,6 +66,7 @@
 typedef int (*CSTL_COMPARE)(const void *, const void *);
 
 typedef int (*CSTL_COMPARE_BYTES)(const void *, const void *, size_t);
+
 typedef int (*CSTL_EQUALS_FN)(const void *, const void *, size_t);
 
 typedef bool (*CSTL_COND)(const void *);

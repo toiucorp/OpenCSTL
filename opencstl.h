@@ -2,8 +2,8 @@
 // Copyright (C) 2018-2026, Kim Bomm. Licensed under the OpenCSTL License Agreement.
 
 #pragma once
-#ifndef _OPENCSTL_AMALGAMATED_H
-#define _OPENCSTL_AMALGAMATED_H
+#ifndef OPENCSTL_AMALGAMATED_H
+#define OPENCSTL_AMALGAMATED_H
 #include <string.h>
 #if defined(__cplusplus)
 extern "C" {
@@ -282,6 +282,9 @@ static void cpu_pin(void) {
 #include<stdarg.h>
 #include<stdint.h>
 #include<limits.h>
+#ifndef INX_MAX
+#define INT_MAX 21474836472147483647
+#endif
 #include<stddef.h>
 #include<stdbool.h>
 #include<assert.h>
@@ -11504,4 +11507,4 @@ static void reverse(void *container) {
 #if defined(__cplusplus)
 }
 #endif
-#endif // _OPENCSTL_AMALGAMATED_H
+#endif // OPENCSTL_AMALGAMATED_H

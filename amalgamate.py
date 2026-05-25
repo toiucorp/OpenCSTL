@@ -266,7 +266,7 @@ BANNER_COMPACT = """\
 // Copyright (C) 2018-2026, Kim Bomm. Licensed under the OpenCSTL License Agreement.
 """
 
-GUARD = '_OPENCSTL_AMALGAMATED_H'
+GUARD = 'OPENCSTL_AMALGAMATED_H'
 
 
 def write_output(out_path, amalg, body_lines, compact=False, encoding_ansi=False):
@@ -354,7 +354,8 @@ def main():
     # Mirror copies — skip silently if the target directory doesn't exist.
     for target in ('examples/opencstl.h',
                    'assets/opencstl.h',
-                   'bench/bench_cstl/3rdparty/include/opencstl.h'):
+                   'bench/bench_cstl/3rdparty/include/opencstl.h',
+                   'usage/opencstl.h'):
         tgt = Path(target)
         if tgt.parent.exists():
             shutil.copy(out_path, tgt)
