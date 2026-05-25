@@ -49,6 +49,8 @@
 #include "types.h"
 #include "compare.h"
 
+
+
 OPENCSTL_FUNC ptrdiff_t __is_deque(void **container) {
     if (OPENCSTL_NIDX(container, -1) < 0) {
         return 1;
@@ -409,7 +411,7 @@ OPENCSTL_FUNC void *__cstl_deque_find(void **container, void *iter_begin, void *
 }
 
 OPENCSTL_FUNC size_type __cstl_deque_max_size(void **container) {
-    return 0x7fffffff;
+    return INTEGER32_MAX;
 }
 
 OPENCSTL_FUNC void __cstl_deque_shrink_to_fit(void **container) {

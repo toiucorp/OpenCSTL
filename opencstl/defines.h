@@ -83,6 +83,11 @@
 #define OPENCSTL_ARRAY          10
 
 
+// =========
+
+#define INTEGER32_MAX 0x7fffffff
+
+
 #if defined(OPENCSTL_OS_WINDOWS)
 #include<Windows.h>
 #endif

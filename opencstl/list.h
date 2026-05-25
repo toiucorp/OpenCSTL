@@ -537,7 +537,7 @@ OPENCSTL_FUNC void __cstl_list_qsort(void **container, int (*cmp)(const void *, 
 }
 
 OPENCSTL_FUNC size_type __cstl_list_max_size(void **container) {
-    return INT_MAX;
+    return INTEGER32_MAX;
 }
 
 OPENCSTL_FUNC void __cstl_list_reverse(void **container) {

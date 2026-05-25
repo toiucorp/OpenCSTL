@@ -343,7 +343,7 @@ OPENCSTL_FUNC void *__cstl_vector_prev(void *it, size_type64 type_size) {
 }
 
 OPENCSTL_FUNC size_type __cstl_vector_max_size(void **container) {
-    return INT_MAX;
+    return INTEGER32_MAX;
 }
 
 
