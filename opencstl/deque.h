@@ -48,6 +48,10 @@
 #include "defines.h"
 #include "types.h"
 #include "compare.h"
+#include<limits.h>
+#ifndef INX_MAX
+#define INX_MAX 2147483647
+#endif
 OPENCSTL_FUNC ptrdiff_t __is_deque(void **container) {
     if (OPENCSTL_NIDX(container, -1) < 0) {
         return 1;
