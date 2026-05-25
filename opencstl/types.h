@@ -43,9 +43,6 @@
 #include<stdarg.h>
 #include<stdint.h>
 #include<limits.h>
-#ifndef INX_MAX
-#define INX_MAX 2147483647
-#endif
 #include<stddef.h>
 #include<stdbool.h>
 #include<assert.h>
